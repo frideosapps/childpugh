@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
+import 'package:frideos/frideos.dart';
+
 import 'choice.dart';
 
 class ChildPughBloc {
@@ -9,7 +11,7 @@ class ChildPughBloc {
     print('-------CHILDPUGH BLOC INIT--------');
 
     _isCompleteSubscription = isComplete.listen((_) {
-      print('----CALC CHILD PUGH---');      
+      print('----CALC CHILD PUGH---');
       calc();
     });
   }
@@ -17,82 +19,70 @@ class ChildPughBloc {
   StreamSubscription _isCompleteSubscription;
 
   // BILIRUBIN (< 2mg/dL  +1, 2 - 3 +2, >3 +3)
-  final _bilirubin = BehaviorSubject<Score>();
-  Function(Score) get inBilirubin => _bilirubin.sink.add;
-  Stream<Score> get outBilirubin => _bilirubin.stream;
+  final bilirubin = StreamedValue<Score>();
 
   // ALBUMIN (< 2.8 g/dL +3, 2.8 - 3.5  +2, > 3.5  +1)
-  final _albumin = BehaviorSubject<Score>();
-  Function(Score) get inAlbumin => _albumin.sink.add;
-  Stream<Score> get outAlbumin => _albumin.stream;
+  final albumin = StreamedValue<Score>();
 
   // INR (<1.7  +1, 1.7 - 2.2  +2, > 2.2  +3)
-  final _inr = BehaviorSubject<Score>();
-  Function(Score) get inInr => _inr.sink.add;
-  Stream<Score> get outInr => _inr.stream;
+  final inr = StreamedValue<Score>();
 
   // ASCITES (Absent +1, slight +2, moderate +3)
-  final _ascites = BehaviorSubject<Score>();
-  Function(Score) get inAscites => _ascites.sink.add;
-  Stream<Score> get outAscites => _ascites.stream;
+  final ascites = StreamedValue<Score>();
 
   // ENCEPHALOPATHY (NO +1, Grade 1-2 +2, Grade 3-4 +3)
-  final _encephalopathy = BehaviorSubject<Score>();
-  Function(Score) get inEncephalopathy => _encephalopathy.sink.add;
-  Stream<Score> get outEncephalopathy => _encephalopathy.stream;
+  final encephalopathy = StreamedValue<Score>();
 
-  //RESULT
-  final _result = BehaviorSubject<int>();
-  Function(int) get inResult => _result.sink.add;
-  Stream<int> get outResult => _result.stream;
+  // RESULT
+  final result = StreamedValue<int>();
 
   Stream<bool> get isComplete => Observable.combineLatest5(
-      outBilirubin,
-      outAlbumin,
-      outAscites,
-      outInr,
-      outEncephalopathy,
+      bilirubin.outStream,
+      albumin.outStream,
+      ascites.outStream,
+      inr.outStream,
+      encephalopathy.outStream,
       (a, b, c, d, e) => true);
 
   void calc() {
-    int result = 0;
+    int total = 0;
     List<Score> scores = [];
     scores
-      ..add(_bilirubin.value)
-      ..add(_albumin.value)
-      ..add(_inr.value)
-      ..add(_ascites.value)
-      ..add(_encephalopathy.value);
+      ..add(bilirubin.value)
+      ..add(albumin.value)
+      ..add(inr.value)
+      ..add(ascites.value)
+      ..add(encephalopathy.value);
 
     for (var value in scores) {
       switch (value) {
         case Score.one:
-          result += 1;
+          total += 1;
           break;
         case Score.two:
-          result += 2;
+          total += 2;
           break;
         case Score.three:
-          result += 3;
+          total += 3;
           break;
         default:
           break;
       }
     }
 
-    // send the result to stream
-    inResult(result);
-    print('RESULT: ${_result.value}');
+    // send the result to stream    
+    result.value = total;
+    print('RESULT: $total');
   }
 
   void dispose() {
     print('---------CHILDPUGH BLOC DISPOSE-----------');
-    _bilirubin.close();
-    _albumin.close();
-    _inr.close();
-    _ascites.close();
-    _encephalopathy.close();
-    _result.close();
+    bilirubin.dispose();
+    albumin.dispose();
+    inr.dispose();
+    ascites.dispose();
+    encephalopathy.dispose();
+    result.dispose();
     _isCompleteSubscription.cancel();
   }
 }

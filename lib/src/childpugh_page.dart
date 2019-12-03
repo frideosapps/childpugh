@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'childpugh_bloc.dart';
 import 'choice.dart';
 
+import 'package:frideos/frideos.dart';
+
 class ChildPughPage extends StatefulWidget {
   final bloc = ChildPughBloc();
 
@@ -55,7 +57,7 @@ class ChildPughResult extends StatelessWidget {
               builder: (context, snapshot) {
                 return snapshot.hasData
                     ? StreamBuilder<int>(
-                        stream: bloc.outResult,
+                        stream: bloc.result.outStream,
                         builder: (context, snapshot) {
                           return snapshot.hasData
                               ? Result(result: snapshot.data)
@@ -149,29 +151,29 @@ class ChildPughForm extends StatelessWidget {
           ),
           HeaderSection(text: 'Bilirubin (mg/dL)'),
           ChildPughSection(
-              inStream: bloc.inBilirubin,
-              outStream: bloc.outBilirubin,
-              choices: bilirubinChoices),
+            streamedValue: bloc.bilirubin,
+            choices: bilirubinChoices,
+          ),
           HeaderSection(text: 'Albumin (g/dL)'),
           ChildPughSection(
-              inStream: bloc.inAlbumin,
-              outStream: bloc.outAlbumin,
-              choices: albuminChoices),
+            streamedValue: bloc.albumin,
+            choices: albuminChoices,
+          ),
           HeaderSection(text: 'INR'),
           ChildPughSection(
-              inStream: bloc.inInr,
-              outStream: bloc.outInr,
-              choices: inrChoices),
+            streamedValue: bloc.inr,
+            choices: inrChoices,
+          ),
           HeaderSection(text: 'Ascites'),
           ChildPughSection(
-              inStream: bloc.inAscites,
-              outStream: bloc.outAscites,
-              choices: ascitesChoices),
+            streamedValue: bloc.ascites,
+            choices: ascitesChoices,
+          ),
           HeaderSection(text: 'Encephalopathy'),
           ChildPughSection(
-              inStream: bloc.inEncephalopathy,
-              outStream: bloc.outEncephalopathy,
-              choices: encephalopathyChoices),
+            streamedValue: bloc.encephalopathy,
+            choices: encephalopathyChoices,
+          ),
           Container(
             height: 12.0,
           ),
@@ -212,24 +214,23 @@ class HeaderSection extends StatelessWidget {
 }
 
 class ChildPughSection extends StatelessWidget {
-  const ChildPughSection({Key key, this.inStream, this.outStream, this.choices})
+  const ChildPughSection({Key key, this.streamedValue, this.choices})
       : super(key: key);
 
-  final Stream outStream;
-  final Function(Score) inStream;
+  final StreamedValue<Score> streamedValue;
   final List<Choice> choices;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Score>(
-      stream: outStream,
+      stream: streamedValue.outStream,
       builder: (context, snapshot) {
         return Column(children: [
           for (var choice in choices)
             InkWell(
               onTap: () {
                 // When the user taps the choice the value is sent to stream
-                inStream(choice.score);
+                streamedValue.value = choice.score;
                 print("${choice.text}: ${choice.score}");
               },
               child: Padding(
@@ -238,8 +239,7 @@ class ChildPughSection extends StatelessWidget {
                 child: Row(
                   children: [
                     // If the stream has the same value of the current choice
-                    // it is selected so it shows the checked box otherwise
-                    // the empty square
+                    // shows the checked box, otherwise the empty square
                     snapshot.data == choice.score
                         ? Icon(
                             Icons.check_box,
