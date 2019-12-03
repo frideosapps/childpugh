@@ -8,11 +8,13 @@ class ChildPughBloc {
   ChildPughBloc() {
     print('-------CHILDPUGH BLOC INIT--------');
 
-    isComplete.listen((_) {
-      print('----CALC CHILD PUGH---');
+    _isCompleteSubscription = isComplete.listen((_) {
+      print('----CALC CHILD PUGH---');      
       calc();
     });
   }
+
+  StreamSubscription _isCompleteSubscription;
 
   // BILIRUBIN (< 2mg/dL  +1, 2 - 3 +2, >3 +3)
   final _bilirubin = BehaviorSubject<Score>();
@@ -91,5 +93,6 @@ class ChildPughBloc {
     _ascites.close();
     _encephalopathy.close();
     _result.close();
+    _isCompleteSubscription.cancel();
   }
 }
