@@ -29,11 +29,15 @@ class ChildPughPageState extends State<ChildPughPage> {
       body: Column(
         children: [
           Container(
-              margin: const EdgeInsets.only(top: 12.0, left: 6.0, right: 6.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[500], width: 4.0)),
-              child: ChildPughResult(bloc: widget.bloc)),
-          Expanded(child: ChildPughForm(bloc: widget.bloc)),
+            margin: const EdgeInsets.only(top: 12.0, left: 6.0, right: 6.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[500], width: 4.0),
+            ),
+            child: ChildPughResult(bloc: widget.bloc),
+          ),
+          Expanded(
+            child: ChildPughForm(bloc: widget.bloc),
+          ),
         ],
       ),
     );
@@ -50,7 +54,7 @@ class ChildPughResult extends StatelessWidget {
       color: Colors.white,
       height: 96.0,
       child: Row(
-        children: <Widget>[
+        children: [
           Expanded(
             child: StreamBuilder<bool>(
               stream: bloc.isComplete,
@@ -64,10 +68,12 @@ class ChildPughResult extends StatelessWidget {
                               : Container();
                         })
                     : Center(
-                        child: const Text('Complete the form.',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                            )),
+                        child: const Text(
+                          'Complete the form.',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                          ),
+                        ),
                       );
               },
             ),
@@ -102,10 +108,10 @@ class Result extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
+      children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             Text(
               'Grade:',
               style: styleH,
@@ -191,21 +197,23 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
       height: 32.0,
       decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withAlpha(200),
-          border: Border.all(color: Colors.blueGrey[800], width: 1.0)),
+        color: Theme.of(context).primaryColor.withAlpha(200),
+        border: Border.all(color: Colors.blueGrey[800], width: 1.0),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
+        children: [
           Text(
             text,
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.0,
-                fontWeight: FontWeight.w500),
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -241,18 +249,18 @@ class ChildPughSection extends StatelessWidget {
                     // If the stream has the same value of the current choice
                     // shows the checked box, otherwise the empty square
                     snapshot.data == choice.score
-                        ? Icon(
-                            Icons.check_box,
-                          )
-                        : Icon(
-                            Icons.crop_square,
-                          ),
+                        ? Icon(Icons.check_box)
+                        : Icon(Icons.crop_square),
                     //To show the text of the current choice
                     Padding(
                       padding: const EdgeInsets.only(left: 12.0),
-                      child: Text(choice.text,
-                          style: const TextStyle(
-                              fontSize: 16.0, fontWeight: FontWeight.w400)),
+                      child: Text(
+                        choice.text,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
                     ),
                   ],
                 ),
