@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'childpugh_bloc.dart';
+import 'childpugh_data.dart';
 import 'choice.dart';
 
-import 'package:frideos/frideos.dart';
+import 'package:rebuilder/rebuilder.dart';
 
 class ChildPughPage extends StatefulWidget {
-  final bloc = ChildPughBloc();
+  final dataModel = ChildPughModel();
 
   @override
   ChildPughPageState createState() {
@@ -16,7 +16,9 @@ class ChildPughPage extends StatefulWidget {
 class ChildPughPageState extends State<ChildPughPage> {
   @override
   void dispose() {
-    widget.bloc.dispose();
+    // Nothing to dispose in this app, but it is necessary
+    // dispose something, it should called here
+    // widget.dataModel.dispose();
     super.dispose();
   }
 
@@ -33,10 +35,10 @@ class ChildPughPageState extends State<ChildPughPage> {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey[500], width: 4.0),
             ),
-            child: ChildPughResult(bloc: widget.bloc),
+            child: ChildPughResult(dataModel: widget.dataModel),
           ),
           Expanded(
-            child: ChildPughForm(bloc: widget.bloc),
+            child: ChildPughForm(dataModel: widget.dataModel),
           ),
         ],
       ),
@@ -45,8 +47,8 @@ class ChildPughPageState extends State<ChildPughPage> {
 }
 
 class ChildPughResult extends StatelessWidget {
-  const ChildPughResult({Key key, this.bloc}) : super(key: key);
-  final ChildPughBloc bloc;
+  const ChildPughResult({Key key, this.dataModel}) : super(key: key);
+  final ChildPughModel dataModel;
 
   @override
   Widget build(BuildContext context) {
@@ -55,27 +57,19 @@ class ChildPughResult extends StatelessWidget {
       height: 96.0,
       child: Row(
         children: [
-          Expanded(
-            child: StreamBuilder<bool>(
-              stream: bloc.isComplete,
-              builder: (context, snapshot) {
-                return snapshot.hasData
-                    ? StreamBuilder<int>(
-                        stream: bloc.result.outStream,
-                        builder: (context, snapshot) {
-                          return snapshot.hasData
-                              ? Result(result: snapshot.data)
-                              : Container();
-                        })
-                    : Center(
-                        child: const Text(
-                          'Complete the form.',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ),
+          Rebuilder<Score>(
+            rebuilderState: dataModel.result.state,
+            builder: (state, _) => Expanded(
+              child: dataModel.result.value != null
+                  ? Result(result: dataModel.result.value)
+                  : Center(
+                      child: Text(
+                        'Complete the form. ${dataModel.result.value.toString()}',
+                        style: TextStyle(
+                          fontSize: 20.0,
                         ),
-                      );
-              },
+                      ),
+                    ),
             ),
           ),
         ],
@@ -141,9 +135,9 @@ class Result extends StatelessWidget {
 }
 
 class ChildPughForm extends StatelessWidget {
-  const ChildPughForm({Key key, this.bloc}) : super(key: key);
+  const ChildPughForm({Key key, this.dataModel}) : super(key: key);
 
-  final ChildPughBloc bloc;
+  final ChildPughModel dataModel;
 
   @override
   Widget build(BuildContext context) {
@@ -157,27 +151,27 @@ class ChildPughForm extends StatelessWidget {
           ),
           HeaderSection(text: 'Bilirubin (mg/dL)'),
           ChildPughSection(
-            streamedValue: bloc.bilirubin,
+            rebuilderObject: dataModel.bilirubin,
             choices: bilirubinChoices,
           ),
           HeaderSection(text: 'Albumin (g/dL)'),
           ChildPughSection(
-            streamedValue: bloc.albumin,
+            rebuilderObject: dataModel.albumin,
             choices: albuminChoices,
           ),
           HeaderSection(text: 'INR'),
           ChildPughSection(
-            streamedValue: bloc.inr,
+            rebuilderObject: dataModel.inr,
             choices: inrChoices,
           ),
           HeaderSection(text: 'Ascites'),
           ChildPughSection(
-            streamedValue: bloc.ascites,
+            rebuilderObject: dataModel.ascites,
             choices: ascitesChoices,
           ),
           HeaderSection(text: 'Encephalopathy'),
           ChildPughSection(
-            streamedValue: bloc.encephalopathy,
+            rebuilderObject: dataModel.encephalopathy,
             choices: encephalopathyChoices,
           ),
           Container(
@@ -222,36 +216,36 @@ class HeaderSection extends StatelessWidget {
 }
 
 class ChildPughSection extends StatelessWidget {
-  const ChildPughSection({Key key, this.streamedValue, this.choices})
+  const ChildPughSection({Key key, this.rebuilderObject, this.choices})
       : super(key: key);
 
-  final StreamedValue<Score> streamedValue;
+  final RebuilderObject<Score> rebuilderObject;
   final List<Choice> choices;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Score>(
-      stream: streamedValue.outStream,
-      builder: (context, snapshot) {
+    return Rebuilder<Score>(
+      rebuilderState: rebuilderObject.state,
+      builder: (state, _) {
+        print('rebuild');
+
         return Column(children: [
           for (var choice in choices)
             InkWell(
               onTap: () {
-                // When the user taps the choice the value is sent to stream
-                streamedValue.value = choice.score;
-                print("${choice.text}: ${choice.score}");
+                // When the user taps the choice the value is set
+                // triggering the refresh of the widgets associated
+                // to the state of the rebuilderObject
+                rebuilderObject.value = choice.score;
               },
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
                 child: Row(
                   children: [
-                    // If the stream has the same value of the current choice
-                    // shows the checked box, otherwise the empty square
-                    snapshot.data == choice.score
+                    rebuilderObject.value == choice.score
                         ? Icon(Icons.check_box)
                         : Icon(Icons.crop_square),
-                    //To show the text of the current choice
                     Padding(
                       padding: const EdgeInsets.only(left: 12.0),
                       child: Text(
