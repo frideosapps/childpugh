@@ -46,31 +46,20 @@ class ChildPughBloc {
 
   void calc() {
     int total = 0;
-    List<Score> scores = [];
-    scores
-      ..add(bilirubin.value)
-      ..add(albumin.value)
-      ..add(inr.value)
-      ..add(ascites.value)
-      ..add(encephalopathy.value);
+
+    final scores = [
+      bilirubin.value,
+      albumin.value,
+      inr.value,
+      ascites.value,
+      encephalopathy.value,
+    ];
 
     for (var value in scores) {
-      switch (value) {
-        case Score.one:
-          total += 1;
-          break;
-        case Score.two:
-          total += 2;
-          break;
-        case Score.three:
-          total += 3;
-          break;
-        default:
-          break;
-      }
+      total += scorePoints[value];
     }
 
-    // send the result to stream    
+    // send the result to stream
     result.value = total;
     print('RESULT: $total');
   }
