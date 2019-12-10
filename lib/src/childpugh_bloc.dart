@@ -9,7 +9,7 @@ class ChildPughBloc {
     print('-------CHILDPUGH BLOC INIT--------');
 
     _isCompleteSubscription = isComplete.listen((_) {
-      print('----CALC CHILD PUGH---');      
+      print('----CALC CHILD PUGH---');
       calc();
     });
   }
@@ -55,33 +55,23 @@ class ChildPughBloc {
       (a, b, c, d, e) => true);
 
   void calc() {
-    int result = 0;
-    List<Score> scores = [];
-    scores
-      ..add(_bilirubin.value)
-      ..add(_albumin.value)
-      ..add(_inr.value)
-      ..add(_ascites.value)
-      ..add(_encephalopathy.value);
+    int total = 0;
+
+    // Assign only the items not null
+    final scores = [
+      _bilirubin.value,
+      _albumin.value,
+      _inr.value,
+      _ascites.value,
+      _encephalopathy.value,
+    ];
 
     for (var value in scores) {
-      switch (value) {
-        case Score.one:
-          result += 1;
-          break;
-        case Score.two:
-          result += 2;
-          break;
-        case Score.three:
-          result += 3;
-          break;
-        default:
-          break;
-      }
+      total += scorePoints[value];
     }
 
     // send the result to stream
-    inResult(result);
+    inResult(total);
     print('RESULT: ${_result.value}');
   }
 
